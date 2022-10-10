@@ -1,26 +1,20 @@
 <template>
   <div>
-    <h1>Calendar</h1>
-    <ul>
-      <li v-for="event in events" :key="event.id">
+    <h1 class="text-h1">Calendar</h1>
+    <v-list>
+      <v-list-item v-for="event in events" :key="event.id">
         {{ event.name }}
-      </li>
-    </ul>
-    <button type="submit" @click="fetchEvents()">fetchEvents</button>
-    <CalendarDetails />
+      </v-list-item>
+    </v-list>
+    <v-btn type="submit" @click="fetchEvents()">fetchEvents</v-btn>
   </div>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import CalendarDetails from './CalendarDetails.vue';
 
 export default {
   name: 'Calendar',
-  // importしたCalendarDetailsをHTMLで描画するために必要
-  components: {
-    CalendarDetails,
-  },
   // ステートの値が変わると発火
   computed: {
     // getterrsのevents関数を動作させる
@@ -28,7 +22,7 @@ export default {
   },
   methods: {
     // actionsのfetchEvents関数を動作させる
-    ...mapActions('events', ['fetchEvents'])
+    ...mapActions('events', ['fetchEvents']),
   },
 };
 </script>

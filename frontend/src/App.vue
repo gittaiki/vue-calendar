@@ -1,16 +1,18 @@
 <template>
-  <div id="app">
-    <Calendar />
-  </div>
+  <v-app>
+    <v-main>
+      <Calendar />
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import Calendar from './components/Calendar.vue';
+import Calendar from './components/Calendar'
 
 export default {
   name: 'App',
   components: {
-    Calendar,
-  },
+    Calendar
+  }
 };
 </script>

@@ -3,18 +3,18 @@ import axios from 'axios';
 const apiUrl = 'http://localhost:3000';
 
 const state = {
-  events: []
+  events: [],
 };
 
 // computedのmapGettersから呼び出される
 const getters = {
-  events: state => state.events
-}
+  events: (state) => state.events,
+};
 
 const mutations = {
   // eventsステートの値をRails APIのレスポンスデータで上書き(更新)する
-  setEvents: (state, events) => (state.events = events)
-}
+  setEvents: (state, events) => (state.events = events),
+};
 
 // methodsのmapActionsから呼び出される
 const actions = {
@@ -22,14 +22,14 @@ const actions = {
   async fetchEvents({ commit }) {
     // 関数の前にawaitを指定すると、その関数の結果が返されるまで待機
     const response = await axios.get(`${apiUrl}/events`);
-    commit('setEvents', response.data);  // mutationを呼び出す
-  }
-}
+    commit('setEvents', response.data); // mutationを呼び出す
+  },
+};
 
 export default {
   namespaced: true,
   state,
   getters,
   mutations,
-  actions
+  actions,
 };
