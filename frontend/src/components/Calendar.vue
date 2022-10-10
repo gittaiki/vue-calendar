@@ -14,6 +14,9 @@
     </v-sheet>
 
     <v-sheet height="94vh">
+      <!-- ①fetchEventsメソッドを呼び出し、イベントデータを全て取得 -->
+      <!-- ②:eventsは開始時刻と終了時刻の配列が入る -->
+      <!-- ③予定ある日付をクリックすると、showEventメソッドを呼び出す -->
       <v-calendar
        ref="calendar"
        v-model="value"
@@ -21,35 +24,52 @@
        @change="fetchEvents"
        locale="ja-jp"
        :day-format="(timestamp) => new Date(timestamp.date).getDate()"
-       :month-format="(timestamp) => (new Date(timestamp.date).getMonth() + 1) + ' /'">
-      </v-calendar>
+       :month-format="(timestamp) => (new Date(timestamp.date).getMonth() + 1) + ' /'"
+       @click:event="showEvent"
+      ></v-calendar>
     </v-sheet>
+
+    <v-dialog :value="event !== null" @click:outside="closeDialog" width="600">
+      <!-- 予定をクリックするとEventDetailDialogコンポーネントを呼び出す -->
+      <EventDetailDialog v-if="event !== null" />
+
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import { format } from 'date-fns';
 import { mapGetters, mapActions } from 'vuex';
+import EventDetailDialog from './EventDetailDialog';
 
 export default {
   name: 'Calendar',
+  components: {
+    EventDetailDialog,
+  },
   data: () => ({
     // new Date()は現在日時を取得
     value: format(new Date(), 'yyyy/MM/dd'),
   }),
   // ステートの値が変わると発火
   computed: {
-    // getterrsのevents関数を動作させる
-    ...mapGetters('events', ['events']),
+    // getterrsのevents関数を呼び出して使用できるようにしている
+    ...mapGetters('events', ['events', 'event']),
     title() {
       return format(new Date(this.value), 'yyyy年 M月');
     },
   },
   methods: {
-    // actionsのfetchEvents関数を動作させる
-    ...mapActions('events', ['fetchEvents']),
+    // actionsのfetchEvents関数を呼び出して使用できるようにしている
+    ...mapActions('events', ['fetchEvents', 'setEvent']),
     setToday() {
       this.value = format(new Date(), 'yyyy/MM/dd')
+    },
+    showEvent({ event }) {
+      this.setEvent(event);
+    },
+    closeDialog() {
+      this.setEvent(null);
     },
   },
 };
