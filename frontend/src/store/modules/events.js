@@ -8,7 +8,15 @@ const state = {
 
 // computedのmapGettersから呼び出される
 const getters = {
-  events: (state) => state.events,
+  // mapメソッドは配列の各要素に対して操作をする
+  events: state => state.events.map(event => {
+    return {
+      ...event,
+      // 日付オブジェクトを上書き（例）1999-12-01 00:00:00.000
+      start: new Date(event.start),
+      end: new Date(event.end)
+    };
+  }),
 };
 
 const mutations = {
