@@ -1,35 +1,29 @@
 import axios from 'axios';
+import { serializeEvent } from '../../functions/serializers';
 
 const apiUrl = 'http://localhost:3000';
 
 const state = {
   events: [],
   event: null,
+  isEditMode: false,
 };
 
 // computedのmapGettersから呼び出される
 const getters = {
-  // mapメソッドは配列の各要素に対して操作をする
-  events: state => state.events.map(event => {
-    return {
-      ...event,
-      // 日付オブジェクトを上書き（例）1999-12-01 00:00:00.000
-      start: new Date(event.start),
-      end: new Date(event.end)
-    };
-  }),
-  // 変数 = 条件 ? 値１ : 値２;
-  event: state => state.event ? {
-    ...state.event,
-    start: new Date(state.event.start),
-    end: new Date(state.event.end)
-  } : null,
+  // functions/serializers.jsのserializeEventメソッドを実行
+  events: state => state.events.map(event => serializeEvent(event)),
+  event: state => serializeEvent(state.event),
+
+  isEditMode: state => state.isEditMode,
 };
 
 const mutations = {
   // eventsステートの値をRails APIのレスポンスデータで上書き(更新)する
   setEvents: (state, events) => (state.events = events),
+  appendEvent: (state, event) => (state.events = [...state.events, event]),
   setEvent: (state, event) => (state.event = event),
+  setEditMode: (state, bool) => (state.isEditMode = bool),
 };
 
 // methodsのmapActionsから呼び出される
@@ -40,8 +34,15 @@ const actions = {
     const response = await axios.get(`${apiUrl}/events`);
     commit('setEvents', response.data); // mutationを呼び出す
   },
+  async createEvent({ commit }, event) {
+    const response = await axios.post(`${apiUrl}/events`, event);
+    commit('appendEvent', response.data);
+  },
   setEvent({ commit }, event) {
     commit('setEvent', event);
+  },
+  setEditMode({ commit }, bool) {
+    commit('setEditMode', bool)
   },
 };
 
