@@ -12,7 +12,7 @@ const state = {
 // computedのmapGettersから呼び出される
 const getters = {
   // functions/serializers.jsのserializeEventメソッドを実行
-  events: state => state.events.map(event => serializeEvent(event)),
+  events: state => state.events.filter(event => event.calendar.visibility).map(event => serializeEvent(event)),
   event: state => serializeEvent(state.event),
 
   isEditMode: state => state.isEditMode,

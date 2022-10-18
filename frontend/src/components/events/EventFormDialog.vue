@@ -30,6 +30,10 @@
         <TextForm v-model="description" />
       </DialogSection>
 
+      <DialogSection icon="mdi-calendar">
+        <CalendarSelectForm :value="calendar" @input="changeCalendar($event)" />
+      </DialogSection>
+
       <DialogSection icon="mdi-palette">
         <ColorForm v-model="color" />
       </DialogSection>
@@ -53,6 +57,7 @@ import TimeForm from '../forms/TimeForm';
 import TextForm from '../forms/TextForm';
 import ColorForm from '../forms/ColorForm';
 import CheckBox from '../forms/CheckBox';
+import CalendarSelectForm from '../forms/CalendarSelectForm';
 import { isGreaterEndThanStart } from '../../functions/datetime';
 
 export default {
@@ -65,6 +70,7 @@ export default {
     TextForm,
     ColorForm,
     CheckBox,
+    CalendarSelectForm,
   },
   data: () => ({
     name: '',
@@ -75,11 +81,13 @@ export default {
     description: '',
     color: '',
     allDay: false,
+    calendar: null,
   }),
   validations: {
     name: { required },
     startDate: { required },
     endDate: { required },
+    calendar: { required },
   },
   // フォーム開くと発火
   computed: {
@@ -100,6 +108,7 @@ export default {
     this.description = this.event.description;
     this.color = this.event.color;
     this.allDay = !this.event.timed;
+    this.calendar = this.event.calendar;
   },
   methods: {
     ...mapActions('events', ['setEvent', 'setEditMode', 'createEvent', 'updateEvent']),
@@ -121,6 +130,7 @@ export default {
         description: this.description,
         color: this.color,
         timed: !this.allDay,
+        calendar_id: this.calendar.id,
       };
       if (params.id) {
         this.updateEvent(params);
@@ -134,6 +144,10 @@ export default {
       if (!this.event.id) {
         this.setEvent(null);
       }
+    },
+    changeCalendar(calendar) {
+      this.color = calendar.color;
+      this.calendar = calendar;
     },
   },
 };
