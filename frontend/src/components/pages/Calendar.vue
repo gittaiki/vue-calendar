@@ -43,8 +43,9 @@
 <script>
 import { format } from 'date-fns';
 import { mapGetters, mapActions } from 'vuex';
-import EventDetailDialog from './EventDetailDialog';
-import EventFormDialog from './EventFormDialog';
+import EventDetailDialog from '../events/EventDetailDialog';
+import EventFormDialog from '../events/EventFormDialog';
+import { getDefaultStartAndEnd } from '../../functions/datetime';
 
 export default {
   name: 'Calendar',
@@ -83,8 +84,7 @@ export default {
       // 2021-10-07を2021/10/07に変換
       date = date.replace(/-/g, '/');
 
-      const start = format(new Date(date), 'yyyy/MM/dd 00:00:00')
-      const end = format(new Date(date), 'yyyy/MM/dd 01:00:00')
+      const [start, end] = getDefaultStartAndEnd(date);
       this.setEvent({ name: '', start, end, timed: true });
       this.setEditMode(true);
     },

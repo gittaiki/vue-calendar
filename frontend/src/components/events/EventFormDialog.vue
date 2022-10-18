@@ -15,11 +15,15 @@
         <div v-show="!allDay">
           <TimeForm v-model="startTime" />
         </div>
-        <DateForm v-model="endDate" />
+        <span class="px-2">–</span>
+        <DateForm v-model="endDate" :isError="isInvalidDatetime" />
         <div v-show="!allDay">
-          <TimeForm v-model="endTime" />
+          <TimeForm v-model="endTime" :isError="isInvalidDatetime" />
         </div>
-        <CheckBox v-model="allDay" label="終日" />
+        <!-- <CheckBox v-model="allDay" label="終日" /> -->
+      </DialogSection>
+      <DialogSection>
+        <CheckBox v-model="allDay" label="終日" class="ma-0 pa-0" />
       </DialogSection>
 
       <DialogSection icon="mdi-card-text-outline">
@@ -32,22 +36,28 @@
 
     </v-card-text>
     <v-card-actions class="d-flex justify-end">
-      <v-btn @click="submit">保存</v-btn>
+      <v-btn @click="cancel">キャンセル</v-btn>
+      <v-btn :disabled="isInvalid" @click="submit">保存</v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import DialogSection from './DialogSection';
-import DateForm from './DateForm';
-import TimeForm from './TimeForm';
-import TextForm from './TextForm';
-import ColorForm from './ColorForm';
-import CheckBox from './CheckBox';
+import { validationMixin } from 'vuelidate';
+import { required } from 'vuelidate/lib/validators';
+
+import DialogSection from '../layouts/DialogSection';
+import DateForm from '../forms/DateForm';
+import TimeForm from '../forms/TimeForm';
+import TextForm from '../forms/TextForm';
+import ColorForm from '../forms/ColorForm';
+import CheckBox from '../forms/CheckBox';
+import { isGreaterEndThanStart } from '../../functions/datetime';
 
 export default {
   name: 'EventFormDialog',
+  mixins: [validationMixin],
   components: {
     DialogSection,
     DateForm,
@@ -66,26 +76,45 @@ export default {
     color: '',
     allDay: false,
   }),
+  validations: {
+    name: { required },
+    startDate: { required },
+    endDate: { required },
+  },
   // フォーム開くと発火
   computed: {
     ...mapGetters('events', ['event']),
+    isInvalidDatetime() {
+      return !isGreaterEndThanStart(this.startDate, this.startTime, this.endDate, this.endTime, this.allDay);
+    },
+    isInvalid() {
+      return this.$v.$invalid || this.isInvalidDatetime;
+    },
   },
   created() {
+    this.name = this.event.name;
     this.startDate = this.event.startDate;
     this.startTime = this.event.startTime;
     this.endDate = this.event.endDate;
     this.endTime = this.event.endTime;
+    this.description = this.event.description;
     this.color = this.event.color;
     this.allDay = !this.event.timed;
   },
   methods: {
-    ...mapActions('events', ['setEvent', 'setEditMode', 'createEvent']),
+    ...mapActions('events', ['setEvent', 'setEditMode', 'createEvent', 'updateEvent']),
     closeDialog() {
       this.setEditMode(false);
       this.setEvent(null);
     },
     submit() {
+      if (this.isInvalid) {
+        return
+      }
       const params = {
+        // 編集用でstateにあるevent情報（パラメーター含む）を追加。新規作成時は空。
+        ...this.event,
+
         name: this.name,
         start: `${this.startDate} ${this.startTime || ''}`,
         end: `${this.endDate} ${this.endTime || ''}`,
@@ -93,8 +122,18 @@ export default {
         color: this.color,
         timed: !this.allDay,
       };
-      this.createEvent(params);
+      if (params.id) {
+        this.updateEvent(params);
+      } else {
+        this.createEvent(params);
+      }
       this.closeDialog();
+    },
+    cancel() {
+      this.setEditMode(false);
+      if (!this.event.id) {
+        this.setEvent(null);
+      }
     },
   },
 };

@@ -24,6 +24,11 @@ const mutations = {
   appendEvent: (state, event) => (state.events = [...state.events, event]),
   setEvent: (state, event) => (state.event = event),
   setEditMode: (state, bool) => (state.isEditMode = bool),
+  // stateのeventsから削除したeventのみ削除
+  removeEvent: (state, event) => (state.events = state.events.filter(e => e.id !== event.id)),
+
+  resetEvent: state => (state.event = null),
+  updateEvent: (state, event) => (state.events = state.events.map(e => (e.id === event.id ? event : e))),
 };
 
 // methodsのmapActionsから呼び出される
@@ -37,6 +42,15 @@ const actions = {
   async createEvent({ commit }, event) {
     const response = await axios.post(`${apiUrl}/events`, event);
     commit('appendEvent', response.data);
+  },
+  async deleteEvent({ commit }, id) {
+    const response = await axios.delete(`${apiUrl}/events/${id}`);
+    commit('removeEvent', response.data);
+    commit('resetEvent');
+  },
+  async updateEvent({ commit }, event) {
+    const response = await axios.put(`${apiUrl}/events/${event.id}`, event);
+    commit('updateEvent', response.data);
   },
   setEvent({ commit }, event) {
     commit('setEvent', event);
