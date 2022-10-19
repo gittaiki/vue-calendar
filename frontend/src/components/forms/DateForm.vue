@@ -1,7 +1,9 @@
 <template>
   <v-menu offset-y>
     <template v-slot:activator="{ on }">
-      <v-btn text v-on="on">{{ value || '日付を選択' }}</v-btn>
+      <v-btn text v-on="on" :class="{ 'red lighten-4 rounded' : isError}">
+        {{ formatDateToJa(value) || '日付を選択' }}
+      </v-btn>
     </template>
     <!-- :valueにpropsから受け取る値を保持する変数、@inputにその変数の値が更新された時に呼び出す処理を指定 -->
     <v-date-picker
@@ -15,8 +17,13 @@
 </template>
 
 <script>
+import { formatDateToJa } from '../../functions/datetime';
+
 export default {
   name: 'DateForm',
-  props: ['value'],
+  props: ['value', 'isError'],
+  methods: {
+    formatDateToJa,
+  },
 }
 </script>
