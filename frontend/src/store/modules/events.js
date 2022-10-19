@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { isDateWithinInterval, compareDates } from '../../functions/datetime';
 import { serializeEvent } from '../../functions/serializers';
 
 const apiUrl = 'http://localhost:3000';
@@ -7,6 +8,7 @@ const state = {
   events: [],
   event: null,
   isEditMode: false,
+  clickedDate: null,
 };
 
 // computedのmapGettersから呼び出される
@@ -14,8 +16,13 @@ const getters = {
   // functions/serializers.jsのserializeEventメソッドを実行
   events: state => state.events.filter(event => event.calendar.visibility).map(event => serializeEvent(event)),
   event: state => serializeEvent(state.event),
-
+  dayEvents: state =>
+    state.events
+      .map(event => serializeEvent(event))
+      .filter(event => isDateWithinInterval(state.clickedDate, event.startDate, event.endDate))
+      .sort(compareDates),
   isEditMode: state => state.isEditMode,
+  clickedDate: state => state.clickedDate,
 };
 
 const mutations = {
@@ -29,6 +36,7 @@ const mutations = {
 
   resetEvent: state => (state.event = null),
   updateEvent: (state, event) => (state.events = state.events.map(e => (e.id === event.id ? event : e))),
+  setClickedDate: (state, date) => (state.clickedDate = date),
 };
 
 // methodsのmapActionsから呼び出される
@@ -57,6 +65,9 @@ const actions = {
   },
   setEditMode({ commit }, bool) {
     commit('setEditMode', bool)
+  },
+  setClickedDate({ commit }, date) {
+    commit('setClickedDate', date);
   },
 };
 

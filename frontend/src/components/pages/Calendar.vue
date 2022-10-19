@@ -32,6 +32,8 @@
           :month-format="timestamp => new Date(timestamp.date).getMonth() + 1 + ' /'"
           @click:event="showEvent"
           @click:day="initEvent"
+          @click:date="showDayEvents"
+          @click:more="showDayEvents"
         ></v-calendar>
       </v-sheet>
     </v-sheet>
@@ -42,6 +44,10 @@
       <EventFormDialog v-if="event !== null && isEditMode" />
 
     </v-dialog>
+
+    <v-dialog :value="clickedDate !== null" @click:outside="closeDialog" width="600">
+      <DayEventList />
+    </v-dialog>
   </div>
 </template>
 
@@ -50,6 +56,7 @@ import { format } from 'date-fns';
 import { mapGetters, mapActions } from 'vuex';
 import EventDetailDialog from '../events/EventDetailDialog';
 import EventFormDialog from '../events/EventFormDialog';
+import DayEventList from '../events/DayEventList';
 import CalendarList from '../calendars/CalendarList';
 import { getDefaultStartAndEnd } from '../../functions/datetime';
 
@@ -59,6 +66,7 @@ export default {
     EventDetailDialog,
     EventFormDialog,
     CalendarList,
+    DayEventList,
   },
   data: () => ({
     // new Date()は現在日時を取得
@@ -67,14 +75,14 @@ export default {
   // カレンダーの月が変わると発火
   computed: {
     // getterrsのevents関数を呼び出して使用できるようにしている
-    ...mapGetters('events', ['events', 'event', 'isEditMode']),
+    ...mapGetters('events', ['events', 'event', 'isEditMode', 'clickedDate']),
     title() {
       return format(new Date(this.value), 'yyyy年 M月');
     },
   },
   methods: {
     // actionsのfetchEvents関数を呼び出して使用できるようにしている
-    ...mapActions('events', ['fetchEvents', 'setEvent', 'setEditMode']),
+    ...mapActions('events', ['fetchEvents', 'setEvent', 'setEditMode', 'setClickedDate']),
     setToday() {
       this.value = format(new Date(), 'yyyy/MM/dd')
     },
@@ -86,14 +94,22 @@ export default {
     closeDialog() {
       this.setEvent(null);
       this.setEditMode(false);
+      this.setClickedDate(null);
     },
     initEvent({ date }) {
+      if (this.clickedDate !== null) {
+        return;
+      }
       // 2021-10-07を2021/10/07に変換
       date = date.replace(/-/g, '/');
 
       const [start, end] = getDefaultStartAndEnd(date);
       this.setEvent({ name: '', start, end, timed: true });
       this.setEditMode(true);
+    },
+    showDayEvents({ date }) {
+      date = date.replace(/-/g, '/');
+      this.setClickedDate(date);
     },
   },
 };
